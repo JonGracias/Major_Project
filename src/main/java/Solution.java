@@ -2,21 +2,12 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
 
 class Solution {
-    public static void main(String[] args) throws IOException {
-        List<List<String>> aList = new ArrayList<>();
-        List<String> list=new ArrayList<>(Arrays.asList("https://wp-assets.airbrake.io/wp-content/uploads/2022/03/04221821/Eeron-bug-squash-small.png.com"));
-        aList.add(list);
-        System.out.println(validateImageSize(aList, "35"));
-    }
     /*
-     * Complete the 'validateImageSize' function below.
-     *
      * The function is expected to return a 2D_STRING_ARRAY.
      * The function accepts following parameters:
      *  1. 2D_STRING_ARRAY imageUrls
@@ -29,7 +20,10 @@ class Solution {
         HttpURLConnection conn = null;
         for (List<String> imageUrl : imageUrls) {
             try {
-                URL url = new URL(imageUrl);
+                String str = imageUrl.toString();
+                str = str.substring(1, str.length() - 1);
+                URL url = new URL(str);
+
                 conn = (HttpURLConnection) url.openConnection();
                 String a = imageUrl.toString();
 
