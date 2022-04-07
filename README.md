@@ -33,4 +33,4 @@ Major Project for CMIS202
 
   
 <br>
-  <img src="https://sketchertest.blob.core.windows.net/previewimages/Yyn0VEN5R7p59T_f-_D5IQ.png" alt="Comparator" title="Comparator">
+  
