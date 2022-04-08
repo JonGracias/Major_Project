@@ -1,26 +1,18 @@
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Scene;
-import javafx.scene.control.TitledPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
-
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.io.*;
 import java.util.concurrent.CountDownLatch;
 
-public class main extends JFrame {
+public class Main extends JFrame {
     public static JFrame frame = new JFrame();
 
     public static void main(String[] args) throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new OutputPane(); // initializes JavaFX environment
-                new MainFrame(frame);
-                latch.countDown();
-            }
+        SwingUtilities.invokeLater(() -> {
+            //new TitledPaneSample(); // initializes JavaFX environment
+            new MainFrame(frame);
+            latch.countDown();
         });
         latch.await();
 
@@ -34,7 +26,7 @@ class MainFrame extends JFrame {
         frame.add(new InputPane(Color.DARK_GRAY).panel, BorderLayout.NORTH);
         frame.add(new TextPane(Color.DARK_GRAY).panel, BorderLayout.WEST);
         frame.add(new TextPane(Color.darkGray).panel, BorderLayout.EAST);
-        frame.add(new OutputPane().panel, BorderLayout.SOUTH);
+        //frame.add(new jfxGroup().panel, BorderLayout.SOUTH); //Not working
         frame.setResizable(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1200, 900);
@@ -67,10 +59,10 @@ class SerializeTxt{
             out.close();
             fileName.close();
 
-            JOptionPane.showMessageDialog(main.frame, "Jpanel has been Saved");
+            JOptionPane.showMessageDialog(Main.frame, "Jpanel has been Saved");
 
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(main.frame, "IOException is caught");
+            JOptionPane.showMessageDialog(Main.frame, "IOException is caught");
         }
     }
 
@@ -97,9 +89,9 @@ class SerializeTxt{
                 //(output).addPanel(filename, panel);
 
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(main.frame, "IOException is caught");
+                JOptionPane.showMessageDialog(Main.frame, "IOException is caught");
             } catch (ClassNotFoundException ex) {
-                JOptionPane.showMessageDialog(main.frame, "ClassNotFoundException is caught");
+                JOptionPane.showMessageDialog(Main.frame, "ClassNotFoundException is caught");
             }
         }
     }
@@ -125,16 +117,8 @@ class TextPane extends JPanel {
 
 class InputPane extends JPanel {
     final static boolean shouldFill = true;
-    final static boolean shouldWeightX = true;
     final static boolean RIGHT_TO_LEFT = false;
     public JPanel panel = new JPanel();
-    public JButton cameraButton = new JButton();
-    public JButton leftButton = new JButton();
-    public JButton rightButton = new JButton();
-    public JButton lGoButton = new JButton();
-    public JButton rGoButton = new JButton();
-    public JTextField leftPanel = new JTextField();
-    public JTextField rightPanel = new JTextField();
     protected Border border = BorderFactory.createBevelBorder(1);
 
     public InputPane(Color b) {
@@ -220,8 +204,8 @@ class InputPane extends JPanel {
     }
 }
 
+/*
 class OutputPane {
-    TitledPane gridTitlePane;
     Scene scene;
     StackPane stack;
     JFXPanel panel;
@@ -231,23 +215,124 @@ class OutputPane {
 
     public OutputPane() {
         panel = new JFXPanel();
-        gridTitlePane = new TitledPane();
+
+        */
+/*gridTitlePane = new TitledPane();
+        gridTitlePane2 = new TitledPane();*//*
+
         GridPane grid = new GridPane();
-        //grid.setVgap(1);
-        grid.setPadding(new javafx.geometry.Insets(1, 1, 1, 1));
+        GridPane grid2 = new GridPane();
+        grid.setVgap(5);
+        grid2.setVgap(5);
+        grid.setPadding(new javafx.geometry.Insets(5, 5, 5, 5));
         grid.add(new javafx.scene.control.Label("First Name: "), 0, 0);
         grid.add(new javafx.scene.control.TextField(), 1, 0);
         grid.add(new javafx.scene.control.Label("Last Name: "), 0, 1);
         grid.add(new javafx.scene.control.TextField(), 1, 1);
         grid.add(new javafx.scene.control.Label("Email: "), 0, 2);
         grid.add(new javafx.scene.control.TextField(), 1, 2);
+        */
+/*gridTitlePane.setText("Grid");
+        gridTitlePane.setContent(grid);*//*
+
+
+        grid2.setPadding(new javafx.geometry.Insets(5, 5, 5, 5));
+        grid2.add(new javafx.scene.control.Label("First Name: "), 0, 0);
+        grid2.add(new javafx.scene.control.TextField(), 1, 0);
+        grid2.add(new javafx.scene.control.Label("Last Name: "), 0, 1);
+        grid2.add(new javafx.scene.control.TextField(), 1, 1);
+        grid2.add(new javafx.scene.control.Label("Email: "), 0, 2);
+        grid2.add(new javafx.scene.control.TextField(), 1, 2);
+      */
+/*  gridTitlePane2.setText("Grid2");
+        gridTitlePane2.setContent(grid2);*//*
+
+        final VBox stackedTitledPanes = new VBox();
+        stackedTitledPanes.getChildren().setAll(
+
+                new TitledPane("Pane 1", grid),
+                new TitledPane("Pane 2", grid2)
+                // new TitledPane("Pane 3",  contentNode3)
+        );
+
+        ((TitledPane) stackedTitledPanes.getChildren().get(0)).setExpanded(true);
+
+        stack = new StackPane();
+        scene = new Scene(stack, 100, 150);
+
+        panel.setScene(scene);
+        stack.getChildren().add(stackedTitledPanes);
+
+    }
+}
+*/
+/*class jfxGroup extends Application {
+    JFXPanel panel;
+    Scene scene;
+    StackPane stack;
+    final String[] imageNames = new String[]{"Apples", "Flowers", "Leaves"};
+    final javafx.scene.image.Image[] images = new javafx.scene.image.Image[imageNames.length];
+    final javafx.scene.image.ImageView[] pics = new javafx.scene.image.ImageView[imageNames.length];
+    final TitledPane[] tps = new TitledPane[imageNames.length];
+    javafx.scene.control.Label label;
+
+    @Override
+    public void start(Stage stage) {
+        panel = new JFXPanel();
+        label = new javafx.scene.control.Label("N/A");
+        //stage.setTitle("TitledPane");
+        scene = new Scene(new Group(), 800, 250);
+        scene.setFill(javafx.scene.paint.Paint.valueOf("Chocolate"));
+
+        // --- GridPane container
+        TitledPane gridTitlePane = new TitledPane();
+        GridPane grid = new GridPane();
+        grid.setVgap(4);
+        grid.setPadding(new javafx.geometry.Insets(5, 5, 5, 5));
+        grid.add(new javafx.scene.control.Label("To: "), 0, 0);
+        grid.add(new javafx.scene.control.TextField(), 1, 0);
+        grid.add(new javafx.scene.control.Label("Cc: "), 0, 1);
+        grid.add(new javafx.scene.control.TextField(), 1, 1);
+        grid.add(new javafx.scene.control.Label("Subject: "), 0, 2);
+        grid.add(new javafx.scene.control.TextField(), 1, 2);
+        grid.add(new javafx.scene.control.Label("Attachment: "), 0, 3);
+        grid.add(label, 1, 3);
         gridTitlePane.setText("Grid");
         gridTitlePane.setContent(grid);
 
-        stack = new StackPane();
-        scene = new Scene(stack, 100, 100);
+        // --- Accordion
+        final Accordion accordion = new Accordion();
+        for (int i = 0; i < imageNames.length; i++) {
+            images[i] = new
+                    javafx.scene.image.Image(getClass().getResourceAsStream(imageNames[i] + ".jpg"));
+            pics[i] = new javafx.scene.image.ImageView(images[i]);
+            tps[i] = new TitledPane(imageNames[i], pics[i]);
+        }
+        accordion.getPanes().addAll(tps);
+        accordion.expandedPaneProperty().addListener(new
+                                                             ChangeListener<TitledPane>() {
+                                                                 public void changed(ObservableValue<? extends TitledPane> ov,
+                                                                                     TitledPane old_val, TitledPane new_val) {
+                                                                     if (new_val != null) {
+                                                                         label.setText(accordion.getExpandedPane().getText() +
+                                                                                 ".jpg");
+                                                                     }
+                                                                 }
+                                                             });
 
+        HBox hbox = new HBox(10);
+        hbox.setPadding(new javafx.geometry.Insets(20, 0, 0, 20));
+        hbox.getChildren().setAll(gridTitlePane, accordion);
+
+        javafx.scene.Group root = (Group) scene.getRoot();
+        root.getChildren().add(hbox);
+
+
+       *//* stage.setScene(scene);
+        stage.show();*//*
         panel.setScene(scene);
-        stack.getChildren().add(gridTitlePane);
+        //stack.getChildren().add(hbox);
     }
 }
+
+*/
