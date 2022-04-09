@@ -1,7 +1,9 @@
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
-import java.io.*;
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 public class Main extends JFrame {
@@ -21,11 +23,15 @@ public class Main extends JFrame {
 }
 
 class MainFrame extends JFrame {
+    static TextPane left = new TextPane(Color.DARK_GRAY);
+    //StyledDocument doc = left.getStyledDocument();
+
+    static TextPane right = new TextPane(Color.DARK_GRAY);
     public MainFrame(JFrame frame) {
         frame.setLayout(new BorderLayout(10, 10));
         frame.add(new InputPane(Color.DARK_GRAY).panel, BorderLayout.NORTH);
-        frame.add(new TextPane(Color.DARK_GRAY).panel, BorderLayout.WEST);
-        frame.add(new TextPane(Color.darkGray).panel, BorderLayout.EAST);
+        frame.add(left.panel, BorderLayout.WEST);
+        frame.add(right.panel, BorderLayout.EAST);
         //frame.add(new jfxGroup().panel, BorderLayout.SOUTH); //Not working
         frame.setResizable(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -37,64 +43,6 @@ class MainFrame extends JFrame {
 
     }
 
-}
-
-
-
-class SerializeTxt{
-    // Serialize the JPanel for saving --------------------------------------------------
-    // class SerializePanel{
-    public static void writeObject() {
-        // file location
-        String file = "src/main/resources/TextFile/Saves/";
-
-        try {
-            //Saving of object in a file
-            FileOutputStream fileName = new FileOutputStream(file);
-            ObjectOutputStream out = new ObjectOutputStream(fileName);
-
-            // Method for serialization of object
-            out.writeObject(null);
-
-            out.close();
-            fileName.close();
-
-            JOptionPane.showMessageDialog(Main.frame, "Jpanel has been Saved");
-
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(Main.frame, "IOException is caught");
-        }
-    }
-
-    // reads object and sends to addStarsToHistory()
-    public static void readObject() {
-        JFileChooser fileChooser = new JFileChooser();
-
-        fileChooser.setCurrentDirectory(new File("src/main/resources/TextFile/Saves"));
-        int response = fileChooser.showOpenDialog(null);
-        if (response == JFileChooser.APPROVE_OPTION) {
-            try {
-                String path = fileChooser.getSelectedFile().getAbsolutePath();
-                String filename = fileChooser.getSelectedFile().getName();
-
-                // Reading the object from a file
-                FileInputStream file = new FileInputStream(path);
-                ObjectInputStream in = new ObjectInputStream(file);
-
-                // Method for deserialization of object
-                JPanel panel = (JPanel) in.readObject();
-
-                in.close();
-                file.close();
-                //(output).addPanel(filename, panel);
-
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(Main.frame, "IOException is caught");
-            } catch (ClassNotFoundException ex) {
-                JOptionPane.showMessageDialog(Main.frame, "ClassNotFoundException is caught");
-            }
-        }
-    }
 }
 
 class TextPane extends JPanel {
@@ -112,6 +60,10 @@ class TextPane extends JPanel {
         panel.setBackground(c);
         panel.setBorder(border);
 
+    }
+
+    public StyledDocument getStyledDocument(StyledDocument doc) {
+        return doc;
     }
 }
 
@@ -150,6 +102,20 @@ class InputPane extends JPanel {
         c.gridwidth = 1;
         c.gridx = 6;
         c.gridy = 0;
+        JTextField finalTxtField = txtField;
+        button.addActionListener(ae -> {
+            //Enter String
+            String stringValue  = finalTxtField.getText().toUpperCase();
+
+            try {
+                //just send a string to the method and return it as a styledDocument to Mainframe
+                MainFrame.left.append("<html>");
+                MainFrame.left.getStyledDocument(FileIn.read(stringValue));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        });
         panel.add(button, c);
 
         button = new JButton("LGo 3");
