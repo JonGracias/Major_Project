@@ -19,6 +19,11 @@
                 <scope>test</scope>
             </dependency>
 
+            <dependency>
+                <groupId>com.github.davidmoten</groupId>
+                <artifactId>word-wrap</artifactId>
+                <version>0.1.1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

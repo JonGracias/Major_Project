@@ -6,7 +6,7 @@ import java.util.List;
 
 
 
-class Solution {
+class Web {
     /*
      * The function is expected to return a 2D_STRING_ARRAY.
      * The function accepts following parameters:

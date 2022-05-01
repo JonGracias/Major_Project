@@ -1,8 +1,12 @@
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
@@ -12,27 +16,23 @@ public class Main extends JFrame {
     public static void main(String[] args) throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
         SwingUtilities.invokeLater(() -> {
-            //new TitledPaneSample(); // initializes JavaFX environment
             new MainFrame(frame);
             latch.countDown();
         });
         latch.await();
-
-
     }
 }
 
 class MainFrame extends JFrame {
-    static TextPane left = new TextPane(Color.DARK_GRAY);
-    //StyledDocument doc = left.getStyledDocument();
+    static TextPane left = new TextPane();
+    static TextPane right = new TextPane();
 
-    static TextPane right = new TextPane(Color.DARK_GRAY);
+
     public MainFrame(JFrame frame) {
         frame.setLayout(new BorderLayout(10, 10));
         frame.add(new InputPane(Color.DARK_GRAY).panel, BorderLayout.NORTH);
-        frame.add(left.panel, BorderLayout.WEST);
-        frame.add(right.panel, BorderLayout.EAST);
-        //frame.add(new jfxGroup().panel, BorderLayout.SOUTH); //Not working
+        frame.add(left.jScrollPane, BorderLayout.WEST);
+        frame.add(right.jScrollPane, BorderLayout.EAST);
         frame.setResizable(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1200, 900);
@@ -40,38 +40,75 @@ class MainFrame extends JFrame {
         frame.setVisible(true);
         frame.validate();
         frame.repaint();
-
     }
 
 }
-
 class TextPane extends JPanel {
-    public JPanel panel = new JPanel();
+    JScrollPane jScrollPane = new JScrollPane();
     public JTextPane textPane = new JTextPane();
+    private final JTextPane lines;
     protected Border border = BorderFactory.createBevelBorder(1);
 
-    //Add drag and drop here
-
-    public TextPane(Color c) {
+    public TextPane() {
         textPane.setPreferredSize(new Dimension(450, 450));
-        panel.setPreferredSize(new Dimension(595, 500));
-        panel.setLayout(new BorderLayout());
-        panel.add(textPane, BorderLayout.CENTER);
-        panel.setBackground(c);
-        panel.setBorder(border);
+        jScrollPane.setPreferredSize(new Dimension(595, 500));
+        jScrollPane.setBorder(border);
+
+        //---LineNumbers------------
+        lines = new JTextPane();
+        lines.setBackground(Color.LIGHT_GRAY);
+        lines.setEditable(false);
+        // Implements Document Listener in order to add the numbered rows
+        // It uses a JTextPane that is not editable
+        textPane.getDocument().addDocumentListener(new DocumentListener() {
+            public String getText() {
+                // caretPosition describes the position of the cursor in by length of the document (Char position).
+                int caretPosition = textPane.getDocument().getLength();
+                // Root describes the Branch Element Section For each line from 0 to the actual length.
+                Element root = textPane.getDocument().getDefaultRootElement();
+                // root.getElementIndex(caretPosition)+1 is the row number plus 1. Because rows start from 0
+                // then 1 and then back to zero again and up from there. That is why i in this case starts at 2
+                StringBuilder text = new StringBuilder("1" + System.getProperty("line.separator"));
+                for (int i = 2; i < root.getElementIndex(caretPosition)+1; i++) {
+                    text.append(i).append(System.getProperty("line.separator"));
+                }
+                return text.toString();
+            }
+            // This is a bunch of superfluous Java code that Java makes you write for some reason.
+            @Override
+            public void changedUpdate(DocumentEvent de) {
+                lines.setText(getText());
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent de) {
+                lines.setText(getText());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent de) {
+                lines.setText(getText());
+            }
+
+        });
+        jScrollPane.getViewport().add(textPane);
+        jScrollPane.setRowHeaderView(lines);
+        jScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
     }
 
-    public StyledDocument getStyledDocument(StyledDocument doc) {
-        return doc;
-    }
 }
-
+/*
+------------------------------------------------------------------------------------------------------------------------
+ TextFields and Buttons - I will change this in the future when I implement a Undoable edit listener
+------------------------------------------------------------------------------------------------------------------------
+*/
 class InputPane extends JPanel {
     final static boolean shouldFill = true;
     final static boolean RIGHT_TO_LEFT = false;
     public JPanel panel = new JPanel();
     protected Border border = BorderFactory.createBevelBorder(1);
+    public FileIn fileIn;
 
     public InputPane(Color b) {
         if (RIGHT_TO_LEFT) {
@@ -86,7 +123,9 @@ class InputPane extends JPanel {
             //natural height, maximum width
             c.fill = GridBagConstraints.HORIZONTAL;
         }
-        txtField = new JTextField("Left 1");
+        //------------------------------------------------
+        // Left Buttons
+        txtField = new JTextField("/Users/AGracias/Desktop/CMIS202/Major_Project/src/main/resources/TextFile/menuText/textFile1.txt");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 0.5;   //request any extra vertical space
         c.anchor = GridBagConstraints.WEST; //left of space
@@ -95,37 +134,47 @@ class InputPane extends JPanel {
         c.gridwidth = 3;   //3 columns wide
         c.gridy = 0;       //third row
         panel.add(txtField, c);
+        // clears the txtField when clicked
+        JTextField finalTxtField1 = txtField;
+        txtField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                finalTxtField1.setText("");
+            }
+        });
 
-        button = new JButton("LFE 2");
+        button = new JButton("Load File");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 0.0;
         c.gridwidth = 1;
         c.gridx = 6;
         c.gridy = 0;
+        // Action Listener that implements the FileIn Class
         JTextField finalTxtField = txtField;
         button.addActionListener(ae -> {
-            //Enter String
+            // Enter String
             String stringValue  = finalTxtField.getText().toUpperCase();
-
+            // Removes the File In: text when drag and drop
+            stringValue = stringValue.substring(stringValue.indexOf(':')+1);
             try {
-                //just send a string to the method and return it as a styledDocument to Mainframe
-                MainFrame.left.append("<html>");
-                MainFrame.left.getStyledDocument(FileIn.read(stringValue));
-            } catch (IOException e) {
+                fileIn = new FileIn(MainFrame.left.textPane,stringValue);
+            } catch (IOException | BadLocationException e) {
                 e.printStackTrace();
             }
 
         });
         panel.add(button, c);
 
-        button = new JButton("LGo 3");
+        button = new JButton("Merge Right");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 0.0;
         c.gridwidth = 1;
         c.gridx = 10;
         c.gridy = 0;
         panel.add(button, c);
-
+        //----------------------------------------------------------
+        // No camera for now
+        /*// Camera button
         button = new JButton("Camera 4");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.ipady = 30;//make button bigger
@@ -133,9 +182,10 @@ class InputPane extends JPanel {
         c.gridwidth = 1;
         c.gridx = 14;
         c.gridy = 0;
-        panel.add(button, c);
-
-        button = new JButton("RGo 5");
+        panel.add(button, c);*/
+        //-----------------------------------------------------------
+        // Right Side
+        button = new JButton("Merge Left");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.ipady = 0; //Reset
         c.weightx = 0.0;
@@ -144,15 +194,8 @@ class InputPane extends JPanel {
         c.gridy = 0;
         panel.add(button, c);
 
-        button = new JButton("RFE 6");
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 0.0;
-        c.gridwidth = 1;
-        c.gridx = 22;
-        c.gridy = 0;
-        panel.add(button, c);
 
-        txtField = new JTextField("Right 7");
+        txtField = new JTextField("/Users/AGracias/Desktop/CMIS202/Major_Project/src/main/resources/TextFile/menuText/textFile2.txt");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 0.5;   //request any extra vertical space
         //c.insets = new Insets(5,0,5,0);  //top padding
@@ -160,7 +203,35 @@ class InputPane extends JPanel {
         c.gridx = 26;
         c.gridwidth = 3;   //3 columns wide
         c.gridy = 0;       //third row
+        JTextField finalTxtField3 = txtField;
+        txtField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                finalTxtField3.setText("");
+            }
+        });
         panel.add(txtField, c);
+
+        button = new JButton("Load File");
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 0.0;
+        c.gridwidth = 1;
+        c.gridx = 22;
+        c.gridy = 0;
+        JTextField finalTxtField2 = txtField;
+        button.addActionListener(ae -> {
+            //Enter String
+            String stringValue1  = finalTxtField2.getText().toUpperCase();
+            stringValue1 = stringValue1.substring(stringValue1.indexOf(':')+1);
+
+            try {
+                fileIn = new FileIn(MainFrame.right.textPane,stringValue1);
+            } catch (IOException | BadLocationException e) {
+                e.printStackTrace();
+            }
+            System.out.println("not right");
+        });
+        panel.add(button, c);
 
         panel.setPreferredSize(new Dimension(1200, 60));
         panel.setBackground(b);
@@ -169,136 +240,3 @@ class InputPane extends JPanel {
 
     }
 }
-
-/*
-class OutputPane {
-    Scene scene;
-    StackPane stack;
-    JFXPanel panel;
-
-    boolean wait = true;
-
-
-    public OutputPane() {
-        panel = new JFXPanel();
-
-        */
-/*gridTitlePane = new TitledPane();
-        gridTitlePane2 = new TitledPane();*//*
-
-        GridPane grid = new GridPane();
-        GridPane grid2 = new GridPane();
-        grid.setVgap(5);
-        grid2.setVgap(5);
-        grid.setPadding(new javafx.geometry.Insets(5, 5, 5, 5));
-        grid.add(new javafx.scene.control.Label("First Name: "), 0, 0);
-        grid.add(new javafx.scene.control.TextField(), 1, 0);
-        grid.add(new javafx.scene.control.Label("Last Name: "), 0, 1);
-        grid.add(new javafx.scene.control.TextField(), 1, 1);
-        grid.add(new javafx.scene.control.Label("Email: "), 0, 2);
-        grid.add(new javafx.scene.control.TextField(), 1, 2);
-        */
-/*gridTitlePane.setText("Grid");
-        gridTitlePane.setContent(grid);*//*
-
-
-        grid2.setPadding(new javafx.geometry.Insets(5, 5, 5, 5));
-        grid2.add(new javafx.scene.control.Label("First Name: "), 0, 0);
-        grid2.add(new javafx.scene.control.TextField(), 1, 0);
-        grid2.add(new javafx.scene.control.Label("Last Name: "), 0, 1);
-        grid2.add(new javafx.scene.control.TextField(), 1, 1);
-        grid2.add(new javafx.scene.control.Label("Email: "), 0, 2);
-        grid2.add(new javafx.scene.control.TextField(), 1, 2);
-      */
-/*  gridTitlePane2.setText("Grid2");
-        gridTitlePane2.setContent(grid2);*//*
-
-        final VBox stackedTitledPanes = new VBox();
-        stackedTitledPanes.getChildren().setAll(
-
-                new TitledPane("Pane 1", grid),
-                new TitledPane("Pane 2", grid2)
-                // new TitledPane("Pane 3",  contentNode3)
-        );
-
-        ((TitledPane) stackedTitledPanes.getChildren().get(0)).setExpanded(true);
-
-        stack = new StackPane();
-        scene = new Scene(stack, 100, 150);
-
-        panel.setScene(scene);
-        stack.getChildren().add(stackedTitledPanes);
-
-    }
-}
-*/
-/*class jfxGroup extends Application {
-    JFXPanel panel;
-    Scene scene;
-    StackPane stack;
-    final String[] imageNames = new String[]{"Apples", "Flowers", "Leaves"};
-    final javafx.scene.image.Image[] images = new javafx.scene.image.Image[imageNames.length];
-    final javafx.scene.image.ImageView[] pics = new javafx.scene.image.ImageView[imageNames.length];
-    final TitledPane[] tps = new TitledPane[imageNames.length];
-    javafx.scene.control.Label label;
-
-    @Override
-    public void start(Stage stage) {
-        panel = new JFXPanel();
-        label = new javafx.scene.control.Label("N/A");
-        //stage.setTitle("TitledPane");
-        scene = new Scene(new Group(), 800, 250);
-        scene.setFill(javafx.scene.paint.Paint.valueOf("Chocolate"));
-
-        // --- GridPane container
-        TitledPane gridTitlePane = new TitledPane();
-        GridPane grid = new GridPane();
-        grid.setVgap(4);
-        grid.setPadding(new javafx.geometry.Insets(5, 5, 5, 5));
-        grid.add(new javafx.scene.control.Label("To: "), 0, 0);
-        grid.add(new javafx.scene.control.TextField(), 1, 0);
-        grid.add(new javafx.scene.control.Label("Cc: "), 0, 1);
-        grid.add(new javafx.scene.control.TextField(), 1, 1);
-        grid.add(new javafx.scene.control.Label("Subject: "), 0, 2);
-        grid.add(new javafx.scene.control.TextField(), 1, 2);
-        grid.add(new javafx.scene.control.Label("Attachment: "), 0, 3);
-        grid.add(label, 1, 3);
-        gridTitlePane.setText("Grid");
-        gridTitlePane.setContent(grid);
-
-        // --- Accordion
-        final Accordion accordion = new Accordion();
-        for (int i = 0; i < imageNames.length; i++) {
-            images[i] = new
-                    javafx.scene.image.Image(getClass().getResourceAsStream(imageNames[i] + ".jpg"));
-            pics[i] = new javafx.scene.image.ImageView(images[i]);
-            tps[i] = new TitledPane(imageNames[i], pics[i]);
-        }
-        accordion.getPanes().addAll(tps);
-        accordion.expandedPaneProperty().addListener(new
-                                                             ChangeListener<TitledPane>() {
-                                                                 public void changed(ObservableValue<? extends TitledPane> ov,
-                                                                                     TitledPane old_val, TitledPane new_val) {
-                                                                     if (new_val != null) {
-                                                                         label.setText(accordion.getExpandedPane().getText() +
-                                                                                 ".jpg");
-                                                                     }
-                                                                 }
-                                                             });
-
-        HBox hbox = new HBox(10);
-        hbox.setPadding(new javafx.geometry.Insets(20, 0, 0, 20));
-        hbox.getChildren().setAll(gridTitlePane, accordion);
-
-        javafx.scene.Group root = (Group) scene.getRoot();
-        root.getChildren().add(hbox);
-
-
-       *//* stage.setScene(scene);
-        stage.show();*//*
-        panel.setScene(scene);
-        //stack.getChildren().add(hbox);
-    }
-}
-
-*/
