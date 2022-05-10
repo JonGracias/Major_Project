@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Scanner;
 
-public class FileIn extends JOptionPane {
+import static javax.swing.JOptionPane.showMessageDialog;
+
+public class FileIn{
     public FileIn(JTextPane pane, String filename) throws IOException, BadLocationException {
         // SimpleAttributeSet uses a Hash Table which extends a dictionary and
         // Implements Serializable and Cloneable, this is how I implement an Undoable Edit listener
@@ -27,9 +29,9 @@ public class FileIn extends JOptionPane {
                 String result = fileIn.nextLine();
                 int length = result.length();
                 // Ensures that length of each row does not exceed the length of the JTextPane
-                int n = 75;
+                int n = 200;
                 if (n<length) {
-                    n = 75 + (result.substring(75, length).indexOf(" "));
+                    n = 200 + (result.substring(200, length).indexOf(" "));
                     for (int i = 0; i < length; i += n) {
                         list.addLast(" " + result.substring(i, Math.min(length, i + n)).trim());
                         list.addLast("\n");
@@ -49,9 +51,18 @@ public class FileIn extends JOptionPane {
     // iterates to through the LinkedList and adds text to the Document Interface
 
     public static void docText(LinkedList<String> list, SimpleAttributeSet attributeSet, Document doc) throws BadLocationException {
+        int start = 0;
         for (String s : list) {
             doc.insertString(doc.getLength(), String.valueOf(s), attributeSet);
+            System.out.println("start: " + start);
+            System.out.println("End: " + doc.getLength());
+            //System.out.println(doc.getText(start, doc.getLength()));
+            start = doc.getLength();
         }
+        //System.out.println(doc.getDefaultRootElement());
+        /*System.out.println(doc.getStartPosition());
+        System.out.println(doc.getEndPosition());*/
+
 
 
     }

@@ -5,6 +5,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -25,14 +26,15 @@ public class Main extends JFrame {
 
 class MainFrame extends JFrame {
     static TextPane left = new TextPane();
-    static TextPane right = new TextPane();
-
+    static MenuBar theJMenuBar = new MenuBar();
 
     public MainFrame(JFrame frame) {
         frame.setLayout(new BorderLayout(10, 10));
-        frame.add(new InputPane(Color.DARK_GRAY).panel, BorderLayout.NORTH);
-        frame.add(left.jScrollPane, BorderLayout.WEST);
-        frame.add(right.jScrollPane, BorderLayout.EAST);
+        frame.setJMenuBar(theJMenuBar.menuBar);
+        frame.add(new InputPane().panel, BorderLayout.NORTH);
+        frame.add(left.jScrollPane);
+
+
         frame.setResizable(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1200, 900);
@@ -43,6 +45,35 @@ class MainFrame extends JFrame {
     }
 
 }
+
+class MenuBar extends JMenuBar {
+    JMenuBar menuBar;
+    JMenu menu;
+    static JMenuItem m1, m2, m3;
+
+
+    public MenuBar(){
+        menuBar = new JMenuBar();
+        menu = new JMenu("A Menu");
+        menu.setMnemonic(KeyEvent.VK_A);
+        menu.getAccessibleContext().setAccessibleDescription(
+                "The only menu in this program that has menu items");
+        menuBar.add(menu);
+
+        // create menuItems
+        m1 = new JMenuItem("MenuItem1");
+        m2 = new JMenuItem("MenuItem2");
+        m3 = new JMenuItem("MenuItem3");
+
+        // add menu items to menu
+        menu.add(m1);
+        menu.add(m2);
+        menu.add(m3);
+
+        // add menu to menu bar
+        menuBar.add(menu);
+    }
+}
 class TextPane extends JPanel {
     JScrollPane jScrollPane = new JScrollPane();
     public JTextPane textPane = new JTextPane();
@@ -50,8 +81,8 @@ class TextPane extends JPanel {
     protected Border border = BorderFactory.createBevelBorder(1);
 
     public TextPane() {
-        textPane.setPreferredSize(new Dimension(450, 450));
-        jScrollPane.setPreferredSize(new Dimension(595, 500));
+        textPane.setPreferredSize(new Dimension(1100, 450));
+        jScrollPane.setPreferredSize(new Dimension(1100, 500));
         jScrollPane.setBorder(border);
 
         //---LineNumbers------------
@@ -103,14 +134,15 @@ class TextPane extends JPanel {
  TextFields and Buttons - I will change this in the future when I implement a Undoable edit listener
 ------------------------------------------------------------------------------------------------------------------------
 */
+
 class InputPane extends JPanel {
     final static boolean shouldFill = true;
     final static boolean RIGHT_TO_LEFT = false;
     public JPanel panel = new JPanel();
-    protected Border border = BorderFactory.createBevelBorder(1);
+    //protected Border border = BorderFactory.createBevelBorder(1);
     public FileIn fileIn;
 
-    public InputPane(Color b) {
+    public InputPane() {
         if (RIGHT_TO_LEFT) {
             panel.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         }
@@ -123,8 +155,7 @@ class InputPane extends JPanel {
             //natural height, maximum width
             c.fill = GridBagConstraints.HORIZONTAL;
         }
-        //------------------------------------------------
-        // Left Buttons
+        //____________________________________________________________________________________________________________________________
         txtField = new JTextField("/Users/AGracias/Desktop/CMIS202/Major_Project/src/main/resources/TextFile/menuText/textFile1.txt");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.weightx = 0.5;   //request any extra vertical space
@@ -174,7 +205,8 @@ class InputPane extends JPanel {
         panel.add(button, c);
         //----------------------------------------------------------
         // No camera for now
-        /*// Camera button
+//*
+// Camera button
         button = new JButton("Camera 4");
         c.fill = GridBagConstraints.HORIZONTAL;
         c.ipady = 30;//make button bigger
@@ -182,61 +214,8 @@ class InputPane extends JPanel {
         c.gridwidth = 1;
         c.gridx = 14;
         c.gridy = 0;
-        panel.add(button, c);*/
+        panel.add(button, c);
+
         //-----------------------------------------------------------
-        // Right Side
-        button = new JButton("Merge Left");
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.ipady = 0; //Reset
-        c.weightx = 0.0;
-        c.gridwidth = 1;
-        c.gridx = 18;
-        c.gridy = 0;
-        panel.add(button, c);
-
-
-        txtField = new JTextField("/Users/AGracias/Desktop/CMIS202/Major_Project/src/main/resources/TextFile/menuText/textFile2.txt");
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 0.5;   //request any extra vertical space
-        //c.insets = new Insets(5,0,5,0);  //top padding
-        c.anchor = GridBagConstraints.EAST; //Right of space
-        c.gridx = 26;
-        c.gridwidth = 3;   //3 columns wide
-        c.gridy = 0;       //third row
-        JTextField finalTxtField3 = txtField;
-        txtField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                finalTxtField3.setText("");
-            }
-        });
-        panel.add(txtField, c);
-
-        button = new JButton("Load File");
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 0.0;
-        c.gridwidth = 1;
-        c.gridx = 22;
-        c.gridy = 0;
-        JTextField finalTxtField2 = txtField;
-        button.addActionListener(ae -> {
-            //Enter String
-            String stringValue1  = finalTxtField2.getText().toUpperCase();
-            stringValue1 = stringValue1.substring(stringValue1.indexOf(':')+1);
-
-            try {
-                fileIn = new FileIn(MainFrame.right.textPane,stringValue1);
-            } catch (IOException | BadLocationException e) {
-                e.printStackTrace();
-            }
-            System.out.println("not right");
-        });
-        panel.add(button, c);
-
-        panel.setPreferredSize(new Dimension(1200, 60));
-        panel.setBackground(b);
-        panel.setBorder(border);
-
-
     }
 }
