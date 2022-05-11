@@ -1,0 +1,10 @@
+LoremIpsum.io allows you to generate filler text in paragraphs, sentences, or words. It’s a great solution if you only need a few sentences, which Lipsum.com doesn’t support.
+
+Another added bonus is the inclusion of the Copy button. On Lipsum.com, you’ll need to highlight all of the text and copy it manually. Here, you can simply click on that button, and your generated text will be instantly copied to your clipboard for pasting.
+
+Where LoremIpsum.io really shines, though, is in its creativity and options. Along with its basic lorem ipsum generator, the site offers 44 others. Here are just a few:
+
+Hodor Ipsum — Lorem ipsum text with a Game of Thrones flavor
+Trump Ipsum — A political take on placeholder text
+Veggie Ipsum — Dummy text with a major bias towards vegetables
+There are quite a lot of funny and interesting lorem ipsum alternatives on this site, and while they may not be as effective as the original, they’re a great gag.
