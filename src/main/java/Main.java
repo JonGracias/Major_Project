@@ -1,3 +1,7 @@
+import components.FileIn;
+import components.OSName;
+import components.TextFilter;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
@@ -6,15 +10,18 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
+import static components.save.save;
+
 public class Main extends JFrame {
+
     public static JFrame frame = new JFrame();
 
     public static void main(String[] args) throws InterruptedException {
+
         final CountDownLatch latch = new CountDownLatch(1);
         SwingUtilities.invokeLater(() -> {
             new MainFrame(frame);
@@ -31,7 +38,7 @@ class MainFrame extends JFrame {
     public MainFrame(JFrame frame) {
         frame.setLayout(new BorderLayout(10, 10));
         frame.setJMenuBar(theJMenuBar.menuBar);
-        frame.add(new InputPane().panel, BorderLayout.NORTH);
+        //frame.add(new InputPane().panel, BorderLayout.NORTH);
         frame.add(left.jScrollPane);
 
 
@@ -50,20 +57,53 @@ class MenuBar extends JMenuBar {
     JMenuBar menuBar;
     JMenu menu;
     static JMenuItem m1, m2, m3;
+    static JFileChooser chooser = new JFileChooser(String.valueOf(new OSName().getOsName()));
+    public FileIn fileIn;
+
 
 
     public MenuBar(){
+        chooser.addChoosableFileFilter(new TextFilter());
+        chooser.setAcceptAllFileFilterUsed(false);
         menuBar = new JMenuBar();
-        menu = new JMenu("A Menu");
+        menu = new JMenu("File");
         menu.setMnemonic(KeyEvent.VK_A);
         menu.getAccessibleContext().setAccessibleDescription(
                 "The only menu in this program that has menu items");
         menuBar.add(menu);
 
         // create menuItems
-        m1 = new JMenuItem("MenuItem1");
-        m2 = new JMenuItem("MenuItem2");
-        m3 = new JMenuItem("MenuItem3");
+        m1 = new JMenuItem("Open");
+        m2 = new JMenuItem("Save");
+        m3 = new JMenuItem("Close");
+
+        m1.addActionListener(ae -> {
+            File sourceFile;
+            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            int returnVal = chooser.showDialog(null, "Open");
+
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                sourceFile = chooser.getSelectedFile();
+                String sourceFilePath = sourceFile.getAbsolutePath();
+                try {
+                    fileIn = new FileIn(MainFrame.left.textPane, sourceFilePath);
+                } catch (IOException | BadLocationException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        m2.addActionListener(ae -> {
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            int returnVal = chooser.showSaveDialog(null);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                String path=chooser.getSelectedFile().getAbsolutePath();
+                save(path, MainFrame.left.textPane.getText());
+            }
+        });
+
+        m3.addActionListener(ae -> MainFrame.left.textPane.setText(""));
+
 
         // add menu items to menu
         menu.add(m1);
@@ -98,9 +138,8 @@ class TextPane extends JPanel {
                 // Root describes the Branch Element Section For each line from 0 to the actual length.
                 Element root = textPane.getDocument().getDefaultRootElement();
                 // root.getElementIndex(caretPosition)+1 is the row number plus 1. Because rows start from 0
-                // then 1 and then back to zero again and up from there. That is why i in this case starts at 2
                 StringBuilder text = new StringBuilder("1" + System.getProperty("line.separator"));
-                for (int i = 2; i < root.getElementIndex(caretPosition)+1; i++) {
+                for (int i = 2; i < root.getElementIndex(caretPosition)+2; i++) {
                     text.append(i).append(System.getProperty("line.separator"));
                 }
                 return text.toString();
@@ -135,11 +174,10 @@ class TextPane extends JPanel {
 ------------------------------------------------------------------------------------------------------------------------
 */
 
-class InputPane extends JPanel {
+/*class InputPane extends JPanel {
     final static boolean shouldFill = true;
     final static boolean RIGHT_TO_LEFT = false;
     public JPanel panel = new JPanel();
-    //protected Border border = BorderFactory.createBevelBorder(1);
     public FileIn fileIn;
 
     public InputPane() {
@@ -180,7 +218,7 @@ class InputPane extends JPanel {
         c.gridwidth = 1;
         c.gridx = 6;
         c.gridy = 0;
-        // Action Listener that implements the FileIn Class
+        // Action Listener that implements the components.FileIn Class
         JTextField finalTxtField = txtField;
         button.addActionListener(ae -> {
             // Enter String
@@ -217,5 +255,5 @@ class InputPane extends JPanel {
         panel.add(button, c);
 
         //-----------------------------------------------------------
-    }
-}
+    }*/
+//}
