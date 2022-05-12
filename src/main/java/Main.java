@@ -1,6 +1,4 @@
-import components.FileIn;
-import components.OSName;
-import components.TextFilter;
+import components.*;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -8,13 +6,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
+import javax.swing.text.StyledEditorKit;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-
-import static components.save.save;
 
 public class Main extends JFrame {
 
@@ -32,7 +29,16 @@ public class Main extends JFrame {
 }
 
 class MainFrame extends JFrame {
-    static TextPane left = new TextPane();
+    static TextPane left;
+
+    static {
+        try {
+            left = new TextPane();
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     static MenuBar theJMenuBar = new MenuBar();
 
     public MainFrame(JFrame frame) {
@@ -55,10 +61,11 @@ class MainFrame extends JFrame {
 
 class MenuBar extends JMenuBar {
     JMenuBar menuBar;
-    JMenu menu;
+    JMenu menu, style;
     static JMenuItem m1, m2, m3;
     static JFileChooser chooser = new JFileChooser(String.valueOf(new OSName().getOsName()));
     public FileIn fileIn;
+
 
 
 
@@ -67,15 +74,30 @@ class MenuBar extends JMenuBar {
         chooser.setAcceptAllFileFilterUsed(false);
         menuBar = new JMenuBar();
         menu = new JMenu("File");
+        style = new JMenu("Style");
         menu.setMnemonic(KeyEvent.VK_A);
         menu.getAccessibleContext().setAccessibleDescription(
                 "The only menu in this program that has menu items");
         menuBar.add(menu);
+        menuBar.add(style);
 
         // create menuItems
         m1 = new JMenuItem("Open");
         m2 = new JMenuItem("Save");
         m3 = new JMenuItem("Close");
+
+        Action action = new StyledEditorKit.BoldAction();
+        action.putValue(Action.NAME, "Bold");
+        style.add(action);
+        Action action1 = new StyledEditorKit.ItalicAction();
+        action1.putValue(Action.NAME, "Italics");
+        style.add(action1);
+        Action action2 = new StyledEditorKit.UnderlineAction();
+        action2.putValue(Action.NAME, "Underline");
+        style.add(action2);
+        Action action3 = new StyledEditorKit.FontSizeAction(Action.LARGE_ICON_KEY, 20 );
+        action3.putValue(Action.NAME, "Increase size");
+        style.add(action3);
 
         m1.addActionListener(ae -> {
             File sourceFile;
@@ -98,7 +120,11 @@ class MenuBar extends JMenuBar {
             int returnVal = chooser.showSaveDialog(null);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 String path=chooser.getSelectedFile().getAbsolutePath();
-                save(path, MainFrame.left.textPane.getText());
+                try {
+                    new save(path, MainFrame.left.textPane.getText());
+                } catch (IOException ignored) {
+
+                }
             }
         });
 
@@ -109,9 +135,6 @@ class MenuBar extends JMenuBar {
         menu.add(m1);
         menu.add(m2);
         menu.add(m3);
-
-        // add menu to menu bar
-        menuBar.add(menu);
     }
 }
 class TextPane extends JPanel {
@@ -119,8 +142,9 @@ class TextPane extends JPanel {
     public JTextPane textPane = new JTextPane();
     private final JTextPane lines;
     protected Border border = BorderFactory.createBevelBorder(1);
+    WordList wordList = new WordList();
 
-    public TextPane() {
+    public TextPane() throws BadLocationException {
         textPane.setPreferredSize(new Dimension(1100, 450));
         jScrollPane.setPreferredSize(new Dimension(1100, 500));
         jScrollPane.setBorder(border);
@@ -129,35 +153,60 @@ class TextPane extends JPanel {
         lines = new JTextPane();
         lines.setBackground(Color.LIGHT_GRAY);
         lines.setEditable(false);
+
         // Implements Document Listener in order to add the numbered rows
         // It uses a JTextPane that is not editable
         textPane.getDocument().addDocumentListener(new DocumentListener() {
-            public String getText() {
-                // caretPosition describes the position of the cursor in by length of the document (Char position).
-                int caretPosition = textPane.getDocument().getLength();
-                // Root describes the Branch Element Section For each line from 0 to the actual length.
+            int x = -1;
+            int lineStart = 0;
+            int index = 0;
+            public String getText() throws BadLocationException {
+                int caretPosition = textPane.getDocument().getLength(); //The end of all the text
+                //root is row number(considering arrays start at 0 so before there is a line Default Root Element starts at -1
                 Element root = textPane.getDocument().getDefaultRootElement();
-                // root.getElementIndex(caretPosition)+1 is the row number plus 1. Because rows start from 0
                 StringBuilder text = new StringBuilder("1" + System.getProperty("line.separator"));
-                for (int i = 2; i < root.getElementIndex(caretPosition)+2; i++) {
+                // root.getElementIndex(caretPosition) + 2 uses an off set to find current line number(+2 because default starts at -1
+                for (int i = 2; i < root.getElementIndex(caretPosition) + 2; i++) {
                     text.append(i).append(System.getProperty("line.separator"));
                 }
+                int row = root.getElementIndex(caretPosition)-1;
+                if(row != x) {
+                    wordList.setV(textPane.getDocument().getText(lineStart, caretPosition-lineStart));
+                    wordList.setLines();
+                    wordList.setIndex(index);
+                    x++;
+                    lineStart = caretPosition;
+                    index++;
+                }
+
                 return text.toString();
             }
-            // This is a bunch of superfluous Java code that Java makes you write for some reason.
+
             @Override
             public void changedUpdate(DocumentEvent de) {
-                lines.setText(getText());
+                try {
+                    lines.setText(getText());
+                } catch (BadLocationException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             @Override
             public void insertUpdate(DocumentEvent de) {
-                lines.setText(getText());
+                try {
+                    lines.setText(getText());
+                } catch (BadLocationException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             @Override
             public void removeUpdate(DocumentEvent de) {
-                lines.setText(getText());
+                try {
+                    lines.setText(getText());
+                } catch (BadLocationException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
         });
@@ -167,93 +216,8 @@ class TextPane extends JPanel {
 
     }
 
+    public void updateWordMap(){
+        System.out.println(wordList);
+    }
 }
-/*
-------------------------------------------------------------------------------------------------------------------------
- TextFields and Buttons - I will change this in the future when I implement a Undoable edit listener
-------------------------------------------------------------------------------------------------------------------------
-*/
 
-/*class InputPane extends JPanel {
-    final static boolean shouldFill = true;
-    final static boolean RIGHT_TO_LEFT = false;
-    public JPanel panel = new JPanel();
-    public FileIn fileIn;
-
-    public InputPane() {
-        if (RIGHT_TO_LEFT) {
-            panel.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-        }
-        JButton button;
-        JTextField txtField;
-
-        panel.setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-        if (shouldFill) {
-            //natural height, maximum width
-            c.fill = GridBagConstraints.HORIZONTAL;
-        }
-        //____________________________________________________________________________________________________________________________
-        txtField = new JTextField("/Users/AGracias/Desktop/CMIS202/Major_Project/src/main/resources/TextFile/menuText/textFile1.txt");
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 0.5;   //request any extra vertical space
-        c.anchor = GridBagConstraints.WEST; //left of space
-        //c.insets = new Insets(5,0,5,0);  //top padding
-        c.gridx = 0;
-        c.gridwidth = 3;   //3 columns wide
-        c.gridy = 0;       //third row
-        panel.add(txtField, c);
-        // clears the txtField when clicked
-        JTextField finalTxtField1 = txtField;
-        txtField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                finalTxtField1.setText("");
-            }
-        });
-
-        button = new JButton("Load File");
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 0.0;
-        c.gridwidth = 1;
-        c.gridx = 6;
-        c.gridy = 0;
-        // Action Listener that implements the components.FileIn Class
-        JTextField finalTxtField = txtField;
-        button.addActionListener(ae -> {
-            // Enter String
-            String stringValue  = finalTxtField.getText().toUpperCase();
-            // Removes the File In: text when drag and drop
-            stringValue = stringValue.substring(stringValue.indexOf(':')+1);
-            try {
-                fileIn = new FileIn(MainFrame.left.textPane,stringValue);
-            } catch (IOException | BadLocationException e) {
-                e.printStackTrace();
-            }
-
-        });
-        panel.add(button, c);
-
-        button = new JButton("Merge Right");
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 0.0;
-        c.gridwidth = 1;
-        c.gridx = 10;
-        c.gridy = 0;
-        panel.add(button, c);
-        //----------------------------------------------------------
-        // No camera for now
-//*
-// Camera button
-        button = new JButton("Camera 4");
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.ipady = 30;//make button bigger
-        c.weightx = 0.0;
-        c.gridwidth = 1;
-        c.gridx = 14;
-        c.gridy = 0;
-        panel.add(button, c);
-
-        //-----------------------------------------------------------
-    }*/
-//}
