@@ -197,7 +197,7 @@ class TextPane extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
-            /** for testing, gettin location of caret and highlighting
+            /** for testing, getting location of caret and highlighting
              * int offset = textPane.getCaretPosition();
              *  Rectangle location;
              *  int x = MainFrame.splitPane.getDividerLocation();
@@ -211,12 +211,13 @@ class TextPane extends JPanel {
             }
         });
         int[] lineStart = {0};
-        int[] x = {-1};
+        int[] x = {0};
+
         // Implements Document Listener in order to add the numbered rows
         // It uses a JTextPane that is not editable
         textPane.getDocument().addDocumentListener(new DocumentListener() {
 
-            public String getText() throws BadLocationException {
+            public String getText(){
 
                 int caretPosition = textPane.getDocument().getLength();
                 Element root = textPane.getDocument().getDefaultRootElement();
@@ -224,31 +225,50 @@ class TextPane extends JPanel {
                 for (int i = 2; i < root.getElementIndex(caretPosition) + 2; i++) {
                     text.append(i).append(System.getProperty("line.separator"));
                 }
-                int row = root.getElementIndex(caretPosition) - 1;
-                if (row != x[0]) {
+                return text.toString();
+            }
+
+            public void wordIndex()  throws BadLocationException {
+                int caretPosition = textPane.getDocument().getLength();
+                Element root = textPane.getDocument().getDefaultRootElement();
+                int row = root.getElementIndex(caretPosition);
+                //check if row is always +1 x[0]
+                /*System.out.println("before x "+x[0]);
+                System.out.println("row "+row);*/
+                if (row > x[0]) {
                     String lines = textPane.getDocument().getText(lineStart[0], caretPosition - lineStart[0]);
 
                     if(MainFrame.focus.matches("Left")){
                         wordList.setV(lines);
                         wordList.setRelatedSources(MainFrame.focus);
-                        System.out.println(wordList.toString());
+                        //System.out.println(wordList.toString());
                     } else {
                         wordList2.setV(lines);
                         wordList2.setRelatedSources(MainFrame.focus);
-                        System.out.println(wordList2.toString());
+                        //System.out.println(wordList2.toString());
                     }
                     x[0]++;
+                    System.out.println("after x "+x[0]);
+                    System.out.println("after row "+ row);
+                    lineStart[0] = caretPosition;
+                }else if(row < x[0]){
+                    if(!(wordList.sentences.isEmpty()) ) {
+                        if (MainFrame.focus.matches("Left")) {
+                            wordList.resetSentences();
+                        } else {
+                            wordList2.resetSentences();
+                        }
+                    }
+                    x[0]--;
                     lineStart[0] = caretPosition;
                 }
-
-
-                return text.toString();
             }
 
             @Override
             public void changedUpdate(DocumentEvent de) {
+                lines.setText(getText());
                 try {
-                    lines.setText(getText());
+                    wordIndex();
                 } catch (BadLocationException e) {
                     throw new RuntimeException(e);
                 }
@@ -256,21 +276,25 @@ class TextPane extends JPanel {
 
             @Override
             public void insertUpdate(DocumentEvent de) {
+                lines.setText(getText());
                 try {
-                    lines.setText(getText());
+                    wordIndex();
+                } catch (BadLocationException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent de) {
+                lines.setText(getText());
+                try {
+                    wordIndex();
                 } catch (BadLocationException e) {
                     throw new RuntimeException(e);
                 }
             }
 
-            @Override
-            public void removeUpdate(DocumentEvent de) {
-                try {
-                    lines.setText(getText());
-                } catch (BadLocationException e) {
-                    throw new RuntimeException(e);
-                }
-            }
 
         });
         jScrollPane.getViewport().add(textPane);

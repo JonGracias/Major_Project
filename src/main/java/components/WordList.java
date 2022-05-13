@@ -4,7 +4,7 @@ import java.util.*;
 
 public class WordList {
     String V;
-    Queue<ArrayList<String>> sentences = new LinkedList<>();
+    public Deque<ArrayList<String>> sentences = new LinkedList<>();
 
     String relatedSources = "";
 
@@ -35,8 +35,9 @@ public class WordList {
 
     public void setSentences(ArrayList<String> words){
         sentences.add(words);
-
-
+    }
+    public void resetSentences(){
+        sentences.removeLast();
     }
 
     public void setRelatedSources(String source){
