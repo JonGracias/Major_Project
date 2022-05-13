@@ -3,7 +3,7 @@ Major Project for CMIS202
 
 <h1>Text Comparator<img src="https://static.wikia.nocookie.net/minecraft/images/8/8b/PoweredRedstoneComparatorNew.gif/revision/latest/scale-to-width-down/300?cb=20191117043025" width="100"></h1>
 
-  <p><strong><em>Compare two text blocks from an image, text file or user imput</strong>.
+  <p><strong><em>Compare two text blocks from an image, text file or user input</em></strong>.
   <br>
   <img src="https://media.giphy.com/media/GXRvf69XOX0Aw/giphy.gif">
   

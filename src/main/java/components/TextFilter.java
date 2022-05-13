@@ -18,10 +18,11 @@ public class TextFilter extends FileFilter {
         }
 
         return false;
-        }
+    }
+
     //The description of this filter
     public String getDescription() {
         return ".txt";
     }
-    }
+}
 

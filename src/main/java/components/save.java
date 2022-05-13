@@ -15,20 +15,5 @@ public class save {
         } catch (IOException x) {
             System.err.format("IOException: %s%n", x);
         }
-        /*File file = new File(path);
-        FileWriter writer = new FileWriter(path);
-        writer.write(text);
-        writer.flush();
-        writer.close();*/
-        /*File file = new File(path + ".txt");
-        file.createNewFile();
-        try {
-            // write string to a file
-            Files.writeString(Path.of(Path.of(path) + ".txt"), text);
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }*/
-
     }
 }

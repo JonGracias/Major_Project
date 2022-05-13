@@ -28,24 +28,28 @@ public class FileIn {
         File fileObj = new File(this.fileName);
         if (fileObj.exists()) {
             Scanner fileIn = new Scanner(fileObj);
+            // Ensures that length of each row does not exceed the length of the JTextPane
             while (fileIn.hasNextLine()) {
                 String result = fileIn.nextLine();
-                this.list.add(result + '\n');
+                result = result.trim();
+                StringBuilder sb = new StringBuilder(result);
+
+                int i = 0;
+                while (i + 72 < sb.length() && (i = sb.lastIndexOf(" ", i + 72)) != -1) {
+                    sb.replace(i, i + 1, "\n");
+                }
+                list.addLast(String.valueOf(sb));
+                list.addLast("\n");
             }
             fileIn.close();
-
         } else
             showMessageDialog(null, "Error File not found.");
     }
 
     // iterates to through the LinkedList and adds text to the Document Interface
     public void docText() throws BadLocationException {
-        int count = 0;
         for (String s : this.list) {
             doc.insertString(doc.getLength(), String.valueOf(s), attributeSet);
-           // System.out.println("line " + count + ":" + this.list.get(count));
-           // count++;
         }
     }
-
 }

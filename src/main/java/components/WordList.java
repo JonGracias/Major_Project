@@ -3,51 +3,47 @@ package components;
 import java.util.*;
 
 public class WordList {
-    int K;
     String V;
     Queue<ArrayList<String>> sentences = new LinkedList<>();
-    int index;
+
+    String relatedSources = "";
 
     public WordList(){
 
     }
 
     public WordList(String V){
-        this.V = V;
+            this.V = V;
 
     }
 
     public void setV(String text){
-        this.V = text;
+            this.V = text;
+            setWords();
     }
 
-    public void setIndex(int i){
-        this.index = i;
-    }
-
-    public void setLines(){
-        String[] lines = V.split("\\s");
-        ArrayList<String> words = new ArrayList<>(List.of(lines));
-        System.out.println("words: "+words);
-        setNewLine(words);
-
-    }
-
-    public void setNewLine(ArrayList<String> words){
-        sentences.add(words);
-        System.out.println("sentences: "+sentences);
-
-    }
-
-    public String toString(){
-        StringBuilder result = new StringBuilder();
-        if(!this.sentences.isEmpty()) {
-            for (ArrayList<String> s : this.sentences) {
-                result.append(s);
-            }
-            return String.valueOf(result);
+    public void setWords(){
+        String str = V.replaceAll("[^\\p{ASCII}]", " ");
+        String[] lines = str.trim().split("(\\s+)");
+        if(!(lines[0].isBlank())) {
+            ArrayList<String> words = new ArrayList<>(List.of(lines));
+            setSentences(words);
         }
-        return null;
+        //System.out.println(Arrays.toString(lines));
+
     }
 
+    public void setSentences(ArrayList<String> words){
+        sentences.add(words);
+
+
+    }
+
+    public void setRelatedSources(String source){
+        relatedSources = source;
+    }
+    public String toString() {
+        String sentences = "sentences: "+ this.sentences;
+        return (relatedSources + sentences);
+    }
 }

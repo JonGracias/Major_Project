@@ -1,14 +1,16 @@
 import components.*;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledEditorKit;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
@@ -30,51 +32,83 @@ public class Main extends JFrame {
 
 class MainFrame extends JFrame {
     static TextPane left;
+    static TextPane right;
 
     static {
         try {
             left = new TextPane();
+            right = new TextPane();
         } catch (BadLocationException e) {
             throw new RuntimeException(e);
         }
     }
+    static JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left.jScrollPane, right.jScrollPane);
 
-    static MenuBar theJMenuBar = new MenuBar();
+    public double divPos = 0.5;
+    public static String focus = "Left";
 
     public MainFrame(JFrame frame) {
-        frame.setLayout(new BorderLayout(10, 10));
-        frame.setJMenuBar(theJMenuBar.menuBar);
-        //frame.add(new InputPane().panel, BorderLayout.NORTH);
-        frame.add(left.jScrollPane);
+        FocusListener fl = new FocusListener()
+        {
+            @Override
+            public void focusGained(FocusEvent e)
+            {
+                //System.out.println("focusGained e.getSource().c=" + ((JTextPane) e.getSource()).getName());
+                focus = ((JTextPane) e.getSource()).getName();
+            }
 
+            @Override
+            public void focusLost(FocusEvent e)
+            {
+                //System.out.println("focusLost e.getSource().c=" + ((JTextPane) e.getSource()).getName());
+            }
+        };
+        left.textPane.setName("Left");
+        right.textPane.setName("Right");
+        left.textPane.addFocusListener(fl);
+        right.textPane.addFocusListener(fl);
+        splitPane.setDividerLocation(divPos);
+        splitPane.setResizeWeight(0.5);
+        Dimension minimumSize = new Dimension(600, 500);
+        left.jScrollPane.setMinimumSize(minimumSize);
+        right.jScrollPane.setMinimumSize(minimumSize);
 
+        frame.setJMenuBar(MenuBar.menuBar());
+        frame.add(splitPane);
         frame.setResizable(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1200, 900);
+        frame.setSize(1200, 700);
         frame.setLocationRelativeTo(null);
+        frame.pack();
         frame.setVisible(true);
         frame.validate();
         frame.repaint();
     }
 
+    public static JTextPane Pane() {
+        JTextPane Pane;
+        if(MainFrame.focus.matches("Left")){
+            Pane = MainFrame.left.textPane;
+        } else {
+            Pane = MainFrame.right.textPane;
+        }
+        return Pane;
+    }
+
 }
+/*class Focus{
+    public
+}*/
 
 class MenuBar extends JMenuBar {
-    JMenuBar menuBar;
-    JMenu menu, style;
-    static JMenuItem m1, m2, m3;
-    static JFileChooser chooser = new JFileChooser(String.valueOf(new OSName().getOsName()));
-    public FileIn fileIn;
-
-
-
-
-    public MenuBar(){
+    private static final JFileChooser chooser = new JFileChooser(String.valueOf(new OSName().getOsName()));
+    public static FileIn fileIn;
+    public static JMenuBar menuBar(){
         chooser.addChoosableFileFilter(new TextFilter());
         chooser.setAcceptAllFileFilterUsed(false);
-        menuBar = new JMenuBar();
-        menu = new JMenu("File");
-        style = new JMenu("Style");
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menu = new JMenu("File");
+        JMenu style = new JMenu("Style");
         menu.setMnemonic(KeyEvent.VK_A);
         menu.getAccessibleContext().setAccessibleDescription(
                 "The only menu in this program that has menu items");
@@ -82,9 +116,9 @@ class MenuBar extends JMenuBar {
         menuBar.add(style);
 
         // create menuItems
-        m1 = new JMenuItem("Open");
-        m2 = new JMenuItem("Save");
-        m3 = new JMenuItem("Close");
+        JMenuItem m1 = new JMenuItem("Open");
+        JMenuItem m2 = new JMenuItem("Save");
+        JMenuItem m3 = new JMenuItem("Close");
 
         Action action = new StyledEditorKit.BoldAction();
         action.putValue(Action.NAME, "Bold");
@@ -108,7 +142,8 @@ class MenuBar extends JMenuBar {
                 sourceFile = chooser.getSelectedFile();
                 String sourceFilePath = sourceFile.getAbsolutePath();
                 try {
-                    fileIn = new FileIn(MainFrame.left.textPane, sourceFilePath);
+                    fileIn = new FileIn(MainFrame.Pane(), sourceFilePath);
+
                 } catch (IOException | BadLocationException e) {
                     e.printStackTrace();
                 }
@@ -121,63 +156,91 @@ class MenuBar extends JMenuBar {
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 String path=chooser.getSelectedFile().getAbsolutePath();
                 try {
-                    new save(path, MainFrame.left.textPane.getText());
+                    new save(path, MainFrame.Pane().getText());
                 } catch (IOException ignored) {
 
                 }
             }
         });
 
-        m3.addActionListener(ae -> MainFrame.left.textPane.setText(""));
+        m3.addActionListener(ae -> MainFrame.Pane().setText(""));
 
 
         // add menu items to menu
         menu.add(m1);
         menu.add(m2);
         menu.add(m3);
+        return menuBar;
     }
 }
+
 class TextPane extends JPanel {
-    JScrollPane jScrollPane = new JScrollPane();
     public JTextPane textPane = new JTextPane();
+    JScrollPane jScrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                                              JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     private final JTextPane lines;
-    protected Border border = BorderFactory.createBevelBorder(1);
     WordList wordList = new WordList();
+    WordList wordList2 = new WordList();
+
 
     public TextPane() throws BadLocationException {
-        textPane.setPreferredSize(new Dimension(1100, 450));
-        jScrollPane.setPreferredSize(new Dimension(1100, 500));
-        jScrollPane.setBorder(border);
+        jScrollPane.setMaximumSize(new Dimension(500, 900));
+        jScrollPane.setPreferredSize(new Dimension(500, 700));
+
 
         //---LineNumbers------------
         lines = new JTextPane();
         lines.setBackground(Color.LIGHT_GRAY);
         lines.setEditable(false);
+        textPane.addMouseListener(new MyListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
 
+            /** for testing, gettin location of caret and highlighting
+             * int offset = textPane.getCaretPosition();
+             *  Rectangle location;
+             *  int x = MainFrame.splitPane.getDividerLocation();
+             *  System.out.println(offset);
+             *  try {
+             *  location = (Rectangle) textPane.modelToView2D(offset);
+             *  } catch (BadLocationException ex) {
+             *  throw new RuntimeException(ex);
+             *  }
+             *  System.out.println(MainFrame.focus);**/
+            }
+        });
+        int[] lineStart = {0};
+        int[] x = {-1};
         // Implements Document Listener in order to add the numbered rows
         // It uses a JTextPane that is not editable
         textPane.getDocument().addDocumentListener(new DocumentListener() {
-            int x = -1;
-            int lineStart = 0;
-            int index = 0;
+
             public String getText() throws BadLocationException {
-                int caretPosition = textPane.getDocument().getLength(); //The end of all the text
-                //root is row number(considering arrays start at 0 so before there is a line Default Root Element starts at -1
+
+                int caretPosition = textPane.getDocument().getLength();
                 Element root = textPane.getDocument().getDefaultRootElement();
                 StringBuilder text = new StringBuilder("1" + System.getProperty("line.separator"));
-                // root.getElementIndex(caretPosition) + 2 uses an off set to find current line number(+2 because default starts at -1
                 for (int i = 2; i < root.getElementIndex(caretPosition) + 2; i++) {
                     text.append(i).append(System.getProperty("line.separator"));
                 }
-                int row = root.getElementIndex(caretPosition)-1;
-                if(row != x) {
-                    wordList.setV(textPane.getDocument().getText(lineStart, caretPosition-lineStart));
-                    wordList.setLines();
-                    wordList.setIndex(index);
-                    x++;
-                    lineStart = caretPosition;
-                    index++;
+                int row = root.getElementIndex(caretPosition) - 1;
+                if (row != x[0]) {
+                    String lines = textPane.getDocument().getText(lineStart[0], caretPosition - lineStart[0]);
+
+                    if(MainFrame.focus.matches("Left")){
+                        wordList.setV(lines);
+                        wordList.setRelatedSources(MainFrame.focus);
+                        System.out.println(wordList.toString());
+                    } else {
+                        wordList2.setV(lines);
+                        wordList2.setRelatedSources(MainFrame.focus);
+                        System.out.println(wordList2.toString());
+                    }
+                    x[0]++;
+                    lineStart[0] = caretPosition;
                 }
+
 
                 return text.toString();
             }
@@ -212,12 +275,7 @@ class TextPane extends JPanel {
         });
         jScrollPane.getViewport().add(textPane);
         jScrollPane.setRowHeaderView(lines);
-        jScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-
     }
 
-    public void updateWordMap(){
-        System.out.println(wordList);
-    }
 }
 
