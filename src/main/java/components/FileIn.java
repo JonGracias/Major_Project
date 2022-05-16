@@ -20,19 +20,8 @@ public class FileIn {
     public FileIn(JTextPane pane, String fileName) throws IOException, BadLocationException {
         doc = pane.getStyledDocument();
         this.fileName = fileName;
-        Runnable r = () -> {
-            try {
-                read();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            try {
-                docText();
-            } catch (BadLocationException e) {
-                throw new RuntimeException(e);
-            }
-        };
-        r.run();
+        read();
+        docText();
     }
 
     public void read() throws IOException {

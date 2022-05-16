@@ -32,7 +32,7 @@ public class PositionList {
         int length;
         int currentLine = 0;
         for(int i = 0; i < V.length();i ++){
-            if(V.charAt(i) == 32 || V.charAt(i) == 10||V.charAt(i) == 13) {
+            if(V.charAt(i) == 32 || V.charAt(i) == 10+13) {
                 String str = V.substring(x, i);
                 length = str.trim().length();
                 System.out.println(str.trim());
@@ -44,7 +44,6 @@ public class PositionList {
                 System.out.println("Word length = " + length);
                 System.out.println("Word start = " + start);
                 System.out.println("Word end = " + end);
-                //System.out.println(System.lineSeparator());
             }
             if(V.charAt(i) == 10||V.charAt(i) == 13){
                 line += i + 1;
