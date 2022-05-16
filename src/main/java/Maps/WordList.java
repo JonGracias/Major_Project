@@ -1,10 +1,11 @@
-package components;
+package Maps;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WordList {
     String V;
-    public Deque<ArrayList<String>> sentences = new LinkedList<>();
+    public list<ArrayList<String>> sentences = new list<>();
 
     String relatedSources = "";
 
@@ -23,7 +24,8 @@ public class WordList {
     }
 
     public void setWords(){
-        String str = V.replaceAll("[^\\p{ASCII}]", " ");
+        //String str = V.replaceAll("[^\\p{ASCII}]", " ");
+        String str = V.replaceAll("(\\w+)\\p{Punct}(\\s|$)", "$1$2");
         String[] lines = str.trim().split("(\\s+)");
         if(!(lines[0].isBlank())) {
             ArrayList<String> words = new ArrayList<>(List.of(lines));
@@ -34,7 +36,11 @@ public class WordList {
     }
 
     public void setSentences(ArrayList<String> words){
-        sentences.add(words);
+        sentences.addNode(words);
+        BstWords wordTree = BstWords.createTree(words);
+        wordTree.traversePreOrder();
+        wordTree.traverseInOrder();
+        wordTree.traversePostOrder();
     }
     public void resetSentences(){
         sentences.removeLast();
@@ -42,9 +48,10 @@ public class WordList {
 
     public void setRelatedSources(String source){
         relatedSources = source;
+
     }
-    public String toString() {
-        String sentences = "sentences: "+ this.sentences;
-        return (relatedSources + sentences);
+    public void print() {
+       //sentences.printNodes();
+      // sentences.printMiddle();
     }
 }

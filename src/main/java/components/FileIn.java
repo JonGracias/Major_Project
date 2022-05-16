@@ -20,8 +20,19 @@ public class FileIn {
     public FileIn(JTextPane pane, String fileName) throws IOException, BadLocationException {
         doc = pane.getStyledDocument();
         this.fileName = fileName;
-        read();
-        docText();
+        Runnable r = () -> {
+            try {
+                read();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                docText();
+            } catch (BadLocationException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        r.run();
     }
 
     public void read() throws IOException {
@@ -32,14 +43,15 @@ public class FileIn {
             while (fileIn.hasNextLine()) {
                 String result = fileIn.nextLine();
                 result = result.trim();
+                result = result.replace("\n", "").replace("\r", "");
                 StringBuilder sb = new StringBuilder(result);
 
                 int i = 0;
                 while (i + 72 < sb.length() && (i = sb.lastIndexOf(" ", i + 72)) != -1) {
                     sb.replace(i, i + 1, "\n");
                 }
-                list.addLast(String.valueOf(sb));
-                list.addLast("\n");
+                list.add(String.valueOf(sb));
+                list.add("\n");
             }
             fileIn.close();
         } else
