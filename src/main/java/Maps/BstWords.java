@@ -7,6 +7,8 @@ public class BstWords {
     private BstWords left;
     private BstWords right;
 
+    public String wordString;
+
     public BstWords() {
         this.data = null;
         this.left = null;
@@ -73,6 +75,7 @@ public class BstWords {
         if (this.left != null) {
             this.left.traverseInOrder();
         }
+        wordString = (this.data.toString());;
         System.out.println(this.data);
         if (this.right != null) {
             this.right.traverseInOrder();
@@ -87,7 +90,12 @@ public class BstWords {
         if (this.right != null) {
             this.right.traversePostOrder();
         }
+        wordString = (this.data.toString());
         System.out.println(this.data);
+    }
+
+    public String toString(){
+        return wordString;
     }
 
 }

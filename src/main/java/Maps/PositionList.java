@@ -2,6 +2,7 @@ package Maps;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
 import java.util.ArrayList;
 
 import static java.lang.Character.isWhitespace;
@@ -14,6 +15,7 @@ public class PositionList {
     ArrayList<Pair> list = new ArrayList<>();
     BstWords wordTree;
     HTable hTable;
+    private final SimpleAttributeSet attributeSet = new SimpleAttributeSet();
 
     public PositionList(){
 
@@ -55,14 +57,26 @@ public class PositionList {
         position.addNode(words);
         wordTree = BstWords.createTree(words);
         hTable = new HTable(words);
-
-
     }
+
+    public void setText(JTextPane pane, int c) throws BadLocationException {
+        switch(c){
+            case 1 : pane.getDocument().insertString(0,position.toString(),attributeSet);
+            break;
+            case 2 :pane.getDocument().insertString(0, String.valueOf(hTable), attributeSet);
+            break;
+            default:wordTree.traversePreOrder();
+                    wordTree.traversePostOrder();
+                    wordTree.traverseInOrder();
+                pane.getDocument().insertString(0, wordTree.toString(), attributeSet);
+        }
+    }
+
     public void print() {
         //position.printNodes();
         //wordTree.traversePreOrder();
         //wordTree.traverseInOrder();
         //wordTree.traversePostOrder();
-        System.out.println(hTable.toString());
+        //System.out.println(hTable.toString());
     }
 }

@@ -94,9 +94,6 @@ public class Main extends JFrame {
         }
 
     }
-/*class Focus{
-    public
-}*/
 
     static class MenuBar extends JMenuBar {
         private static final JFileChooser chooser = new JFileChooser(String.valueOf(new OSName().getOsName()));
@@ -108,11 +105,42 @@ public class Main extends JFrame {
             JMenuBar menuBar = new JMenuBar();
             JMenu menu = new JMenu("File");
             JMenu style = new JMenu("Style");
+            JMenu lists = new JMenu("lists");
             menu.setMnemonic(KeyEvent.VK_A);
             menu.getAccessibleContext().setAccessibleDescription(
                     "The only menu in this program that has menu items");
             menuBar.add(menu);
             menuBar.add(style);
+            menuBar.add(lists);
+
+            JMenuItem show_lists = new JMenuItem("Show");
+            JMenuItem find_Hash = new JMenuItem("Find");
+
+            show_lists.addActionListener(ae ->{
+                Object[] opt = {"BST", "LinkedList", "HashTable", "Cancel"};
+
+                int n = JOptionPane.showOptionDialog(null,
+                        "Which list would you like to see?",
+                        "Choose a list",
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        opt,
+                        opt[0]);
+                if(MainFrame.focus.matches("Left")){
+                    try {
+                        MainFrame.left.positionList1.setText(MainFrame.right.textPane, n);
+                    } catch (BadLocationException e) {
+                        throw new RuntimeException(e);
+                    }
+                }else {
+                    try {
+                        MainFrame.left.positionList2.setText(MainFrame.left.textPane, n);
+                    } catch (BadLocationException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
 
             // create menuItems
             JMenuItem m1 = new JMenuItem("Open");
@@ -166,6 +194,7 @@ public class Main extends JFrame {
 
 
             // add menu items to menu
+            lists.add(show_lists);
             menu.add(m1);
             menu.add(m2);
             menu.add(m3);
@@ -195,8 +224,6 @@ public class Main extends JFrame {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     super.mouseClicked(e);
-                    /*int caretPosition = textPane.getDocument().getLength();
-                    System.out.println(caretPosition);*/
                     /** for testing, getting location of caret and highlighting
                      * int offset = textPane.getCaretPosition();
                      *  Rectangle location;
@@ -243,10 +270,8 @@ public class Main extends JFrame {
                         String lines = textPane.getDocument().getText(lineStart[0], caretPosition - lineStart[0]);
                         if (MainFrame.focus.matches("Left")) {
                             positionList1.setV(lines, textPane);
-                            positionList1.print();
                         } else {
                             positionList2.setV(lines, textPane);
-                            positionList2.print();
                         }
                         x[0]++;
                         lineStart[0] = caretPosition;
