@@ -3,8 +3,7 @@ package Maps;
 import java.util.ArrayList;
 
 public class BstWords {
-
-    private String data;
+    private Pair data;
     private BstWords left;
     private BstWords right;
 
@@ -14,22 +13,19 @@ public class BstWords {
         this.right = null;
     }
 
-    public BstWords(String data) {
+    public BstWords(Pair data) {
         this.data = data;
         this.left = null;
         this.right = null;
     }
 
-    public static BstWords createTree( ArrayList<String> content ) {
+    public static BstWords createTree(ArrayList<Pair> content ) {
         BstWords bstree = new BstWords();
         if( content != null ) {
-            //
-            // Remove the punctuation from the content
-            //
 
             bstree = new BstWords();
             for( int i = 0; i < content.size(); i++ ) {
-                bstree.addNode( content.get(i));
+                bstree.addNode(content.get(i));
             }
         }
         return bstree;
@@ -41,11 +37,11 @@ public class BstWords {
     // left sub-tree; If key is greater, it is inserted in right sub-tree. If it
     // is equal, as a convention, it
     // is inserted in right sub-tree
-    public void addNode(String data) {
+    public void addNode(Pair data) {
         if (this.data == null) {
             this.data = data;
         } else {
-            if (this.data.compareTo(data) < 0) {
+            if (this.data.getWord().compareTo(data.getWord()) < 0) {
                 if (this.left != null) {
                     this.left.addNode(data);
                 } else {
@@ -64,7 +60,7 @@ public class BstWords {
     }
 
     public void traversePreOrder() {
-        //System.out.println(this.data);
+        System.out.println(this.data);
         if (this.left != null) {
             this.left.traversePreOrder();
         }
@@ -77,7 +73,7 @@ public class BstWords {
         if (this.left != null) {
             this.left.traverseInOrder();
         }
-        //System.out.println(this.data);
+        System.out.println(this.data);
         if (this.right != null) {
             this.right.traverseInOrder();
         }
@@ -91,7 +87,7 @@ public class BstWords {
         if (this.right != null) {
             this.right.traversePostOrder();
         }
-        //System.out.println(this.data);
+        System.out.println(this.data);
     }
 
 }

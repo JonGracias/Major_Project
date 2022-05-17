@@ -3,16 +3,19 @@ package Maps;
 public class list<T> {
     node<T> head;
     node<T> tail = null;
+    int size = 0;
 
     void addNode(T data) {
         node<T> temp = new node<>(data);
         temp.next = head;
         temp.prev = null;
 
-        if (head != null)
+        if (head != null) {
             head.prev = temp;
-
+        }
         head = temp;
+        size++;
+
     }
 
     void printMiddle() {
@@ -35,6 +38,7 @@ public class list<T> {
             System.out.println("Doubly linked list is empty");
         }
         tail = tail.prev;
+        size--;
 
     }
 
@@ -63,4 +67,5 @@ public class list<T> {
             current = current.next;
         }
     }
+
 }

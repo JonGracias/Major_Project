@@ -16,6 +16,7 @@ public class FileIn {
     public Document doc;
     private final LinkedList<String> list = new LinkedList<>();
     private final SimpleAttributeSet attributeSet = new SimpleAttributeSet();
+    int counter;
 
     public FileIn(JTextPane pane, String fileName) throws IOException, BadLocationException {
         doc = pane.getStyledDocument();
@@ -32,15 +33,16 @@ public class FileIn {
             while (fileIn.hasNextLine()) {
                 String result = fileIn.nextLine();
                 result = result.trim();
-                result = result.replace("\n", "").replace("\r", "");
+                //result = result.replace("\n", "").replace("\r", "");
                 StringBuilder sb = new StringBuilder(result);
 
                 int i = 0;
                 while (i + 72 < sb.length() && (i = sb.lastIndexOf(" ", i + 72)) != -1) {
-                    sb.replace(i, i + 1, "\n");
+                    sb.replace(i, i + 1, System.lineSeparator());
                 }
                 list.add(String.valueOf(sb));
-                list.add("\n");
+                list.add(System.lineSeparator());
+                counter++;
             }
             fileIn.close();
         } else

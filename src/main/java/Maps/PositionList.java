@@ -4,13 +4,15 @@ import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import java.util.ArrayList;
 
+import static java.lang.Character.isWhitespace;
+
 public class PositionList {
-    private int pos;
-    private int length;
     private int line = 0;
 
     private String V;
-    public list<ArrayList<String>> position = new list<>();
+    public list<ArrayList<Pair>> position = new list<>();
+    ArrayList<Pair> list = new ArrayList<>();
+    BstWords wordTree;
 
     public PositionList(){
 
@@ -22,32 +24,41 @@ public class PositionList {
     public void setV(String text, JTextPane L) throws BadLocationException {
         this.V = text;
         setPosition(L);
+        line += V.length();
 
     }
 
     public void setPosition(JTextPane L) throws BadLocationException {
         int start;
-        int end;
         int x = 0;
         int length;
-        int currentLine = 0;
+        /** testing
+        System.out.println("----------------------------");
+        System.out.println(V);
+        System.out.println("----------------------------");*/
         for(int i = 0; i < V.length();i ++){
-            if(V.charAt(i) == 32 || V.charAt(i) == 10+13) {
+            if(isWhitespace(V.charAt(i))||V.length()==i+1) {
                 String str = V.substring(x, i);
-                length = str.trim().length();
-                System.out.println(str.trim());
+                length = str.length();
                 x = i;
-
                 start = (i) - length  + line;
-                end = start + length;
-                System.out.println("Line = " + line);
-                System.out.println("Word length = " + length);
-                System.out.println("Word start = " + start);
-                System.out.println("Word end = " + end);
-            }
-            if(V.charAt(i) == 10||V.charAt(i) == 13){
-                line += i + 1;
+                int[] pos = new int[]{start, length};
+                String word = L.getDocument().getText(start, length + 1);
+                list.add(new Pair(pos,word));
+                setSentences(list);
             }
         }
+
+    }
+    public void setSentences(ArrayList<Pair> words){
+        position.addNode(words);
+        this.wordTree = BstWords.createTree(words);
+
+    }
+    public void print() {
+        //position.printNodes();
+        wordTree.traversePreOrder();
+        wordTree.traverseInOrder();
+        wordTree.traversePostOrder();
     }
 }

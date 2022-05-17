@@ -1,5 +1,4 @@
 import Maps.PositionList;
-import Maps.WordList;
 import components.*;
 
 import javax.swing.*;
@@ -179,9 +178,8 @@ public class Main extends JFrame {
         JScrollPane jScrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         private final JTextPane lines;
-        WordList wordList = new WordList();
-        PositionList positionList = new PositionList();
-        WordList wordList2 = new WordList();
+        PositionList positionList1 = new PositionList();
+        PositionList positionList2 = new PositionList();
 
 
         public TextPane() throws BadLocationException {
@@ -241,37 +239,17 @@ public class Main extends JFrame {
                     int caretPosition = textPane.getDocument().getLength();
                     Element root = textPane.getDocument().getDefaultRootElement();
                     int row = root.getElementIndex(caretPosition);
-                    //check if row is always +1 x[0]
-                /*System.out.println("before x "+x[0]);
-                System.out.println("row "+row);*/
                     if (row > x[0]) {
                         String lines = textPane.getDocument().getText(lineStart[0], caretPosition - lineStart[0]);
                         if (MainFrame.focus.matches("Left")) {
-                            wordList.setV(lines);
-                            positionList.setV(lines, textPane);
-                            wordList.setRelatedSources(MainFrame.focus);
-                            //wordList.print();
-
-                            //System.out.println(wordList.toString());
+                            positionList1.setV(lines, textPane);
+                            positionList1.print();
                         } else {
-                            wordList2.setV(lines);
-                            wordList2.setRelatedSources(MainFrame.focus);
-                            //System.out.println(wordList2.toString());
+                            positionList2.setV(lines, textPane);
+                            positionList2.print();
                         }
                         x[0]++;
-                        //System.out.println("after x " + x[0]);
-                        //System.out.println("after row " + row);
                         lineStart[0] = caretPosition;
-                    } else if (row < x[0]) {
-                        if (!(wordList.sentences.isEmpty())) {
-                            if (MainFrame.focus.matches("Left")) {
-                                wordList.resetSentences();
-                            } else {
-                                wordList2.resetSentences();
-                            }
-                        }
-                        x[0]--;
-                        lineStart[0] = caretPosition + lineStart[0];
                     }
                 }
 
