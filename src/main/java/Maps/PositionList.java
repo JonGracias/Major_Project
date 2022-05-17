@@ -13,6 +13,7 @@ public class PositionList {
     public list<ArrayList<Pair>> position = new list<>();
     ArrayList<Pair> list = new ArrayList<>();
     BstWords wordTree;
+    HTable hTable;
 
     public PositionList(){
 
@@ -52,13 +53,16 @@ public class PositionList {
     }
     public void setSentences(ArrayList<Pair> words){
         position.addNode(words);
-        this.wordTree = BstWords.createTree(words);
+        wordTree = BstWords.createTree(words);
+        hTable = new HTable(words);
+
 
     }
     public void print() {
         //position.printNodes();
-        wordTree.traversePreOrder();
-        wordTree.traverseInOrder();
-        wordTree.traversePostOrder();
+        //wordTree.traversePreOrder();
+        //wordTree.traverseInOrder();
+        //wordTree.traversePostOrder();
+        System.out.println(hTable.toString());
     }
 }
