@@ -19,7 +19,7 @@ public class HTable {
     }
 
     public static void add(Integer key, int[] length, String word){
-        Pair value = new Pair(length, word);
+        Pair value = new Pair(word, length);
         hTable.put(key,value);
     }
 

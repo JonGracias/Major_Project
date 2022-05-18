@@ -38,7 +38,7 @@ public class Main extends JFrame {
             try {
                 left = new TextPane();
                 right = new TextPane();
-            } catch (BadLocationException e) {
+            } catch (BadLocationException | IOException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -84,20 +84,16 @@ public class Main extends JFrame {
         }
 
         public static JTextPane Pane() {
-            JTextPane Pane;
             if (MainFrame.focus.matches("Left")) {
-                Pane = MainFrame.left.textPane;
-            } else {
-                Pane = MainFrame.right.textPane;
-            }
-            return Pane;
+                return MainFrame.left.textPane;
+            } else
+                return  MainFrame.right.textPane;
         }
 
     }
 
     static class MenuBar extends JMenuBar {
         private static final JFileChooser chooser = new JFileChooser(String.valueOf(new OSName().getOsName()));
-        public static FileIn fileIn;
 
         public static JMenuBar menuBar() {
             chooser.addChoosableFileFilter(new TextFilter());
@@ -116,30 +112,34 @@ public class Main extends JFrame {
             JMenuItem show_lists = new JMenuItem("Show");
             JMenuItem find_Hash = new JMenuItem("Find");
 
-            show_lists.addActionListener(ae ->{
-                Object[] opt = {"BST", "LinkedList", "HashTable", "Cancel"};
+            show_lists.addActionListener(ae -> {
+                int n;
+                do {
+                    Object[] opt = {"Cancel", "LinkedList", "HashTable", "BST"};
 
-                int n = JOptionPane.showOptionDialog(null,
-                        "Which list would you like to see?",
-                        "Choose a list",
-                        JOptionPane.DEFAULT_OPTION,
-                        JOptionPane.QUESTION_MESSAGE,
-                        null,
-                        opt,
-                        opt[0]);
-                if(MainFrame.focus.matches("Left")){
-                    try {
-                        MainFrame.left.positionList1.setText(MainFrame.right.textPane, n);
-                    } catch (BadLocationException e) {
-                        throw new RuntimeException(e);
+                    n = JOptionPane.showOptionDialog(null,
+                            "Which list would you like to see?",
+                            "Choose a list",
+                            JOptionPane.DEFAULT_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            opt,
+                            opt[0]);
+
+                    if (MainFrame.focus.matches("Left")) {
+                        try {
+                            MainFrame.left.positionList.setText(MainFrame.right.textPane, n);
+                        } catch (BadLocationException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        try {
+                            MainFrame.right.positionList.setText(MainFrame.left.textPane, n);
+                        } catch (BadLocationException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
-                }else {
-                    try {
-                        MainFrame.left.positionList2.setText(MainFrame.left.textPane, n);
-                    } catch (BadLocationException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+                } while (n != 0);
             });
 
             // create menuItems
@@ -168,11 +168,19 @@ public class Main extends JFrame {
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     sourceFile = chooser.getSelectedFile();
                     String sourceFilePath = sourceFile.getAbsolutePath();
-                    try {
-                        fileIn = new FileIn(MainFrame.Pane(), sourceFilePath);
+                        if (MainFrame.focus.matches("Left")) {
+                            try {
+                                MainFrame.left.fileIn.setFile(sourceFilePath);
+                            } catch (BadLocationException | IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        } else {
+                            try {
+                                MainFrame.right.fileIn.setFile(sourceFilePath);
+                            } catch (BadLocationException | IOException e) {
+                                throw new RuntimeException(e);
+                            }
 
-                    } catch (IOException | BadLocationException e) {
-                        e.printStackTrace();
                     }
                 }
             });
@@ -207,11 +215,13 @@ public class Main extends JFrame {
         JScrollPane jScrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         private final JTextPane lines;
-        PositionList positionList1 = new PositionList();
-        PositionList positionList2 = new PositionList();
+        public PositionList positionList;
+        public FileIn fileIn;
 
 
-        public TextPane() throws BadLocationException {
+        public TextPane() throws BadLocationException, IOException {
+            fileIn = new FileIn(this.textPane);
+            positionList = new PositionList();
             jScrollPane.setMaximumSize(new Dimension(500, 900));
             jScrollPane.setPreferredSize(new Dimension(500, 700));
 
@@ -269,9 +279,7 @@ public class Main extends JFrame {
                     if (row > x[0]) {
                         String lines = textPane.getDocument().getText(lineStart[0], caretPosition - lineStart[0]);
                         if (MainFrame.focus.matches("Left")) {
-                            positionList1.setV(lines, textPane);
-                        } else {
-                            positionList2.setV(lines, textPane);
+                            positionList.setV(lines, textPane);
                         }
                         x[0]++;
                         lineStart[0] = caretPosition;
@@ -313,6 +321,9 @@ public class Main extends JFrame {
             });
             jScrollPane.getViewport().add(textPane);
             jScrollPane.setRowHeaderView(lines);
+        }
+        public static void setFile(String fileName){
+
         }
 
     }

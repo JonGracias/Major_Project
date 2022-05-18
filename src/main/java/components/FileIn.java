@@ -14,39 +14,45 @@ import static javax.swing.JOptionPane.showMessageDialog;
 public class FileIn {
     public String fileName;
     public Document doc;
+    public JTextPane pane;
     private final LinkedList<String> list = new LinkedList<>();
     private final SimpleAttributeSet attributeSet = new SimpleAttributeSet();
-    int counter;
 
-    public FileIn(JTextPane pane, String fileName) throws IOException, BadLocationException {
-        doc = pane.getStyledDocument();
-        this.fileName = fileName;
-        read();
-        docText();
+    public FileIn(JTextPane pane) throws IOException, BadLocationException {
+        this.pane = pane;
+        this.doc = pane.getStyledDocument();
     }
 
-    public void read() throws IOException {
+    public void setFile(String fileName) throws IOException, BadLocationException {
+        this.fileName = fileName;
+        read();
+    }
+
+    public void read() throws IOException, BadLocationException {
         File fileObj = new File(this.fileName);
         if (fileObj.exists()) {
+            pane.setText("");
             Scanner fileIn = new Scanner(fileObj);
-            // Ensures that length of each row does not exceed the length of the JTextPane
             while (fileIn.hasNextLine()) {
                 String result = fileIn.nextLine();
-                result = result.trim();
-                //result = result.replace("\n", "").replace("\r", "");
-                StringBuilder sb = new StringBuilder(result);
-
-                int i = 0;
-                while (i + 72 < sb.length() && (i = sb.lastIndexOf(" ", i + 72)) != -1) {
-                    sb.replace(i, i + 1, System.lineSeparator());
-                }
-                list.add(String.valueOf(sb));
-                list.add(System.lineSeparator());
-                counter++;
+                writeToList(result);
             }
             fileIn.close();
+            docText();
         } else
             showMessageDialog(null, "Error File not found.");
+    }
+
+    public void writeToList(String input) throws BadLocationException {
+        input = input.trim();
+        StringBuilder sb = new StringBuilder(input);
+
+        int i = 0;
+        while (i + 72 < sb.length() && (i = sb.lastIndexOf(" ", i + 72)) != -1) {
+            sb.replace(i, i + 1, System.lineSeparator());
+        }
+        list.add(String.valueOf(sb));
+        list.add(System.lineSeparator());
     }
 
     // iterates to through the LinkedList and adds text to the Document Interface
@@ -54,5 +60,6 @@ public class FileIn {
         for (String s : this.list) {
             doc.insertString(doc.getLength(), String.valueOf(s), attributeSet);
         }
+        this.list.clear();
     }
 }

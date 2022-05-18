@@ -55,6 +55,7 @@ public class list<T> {
 
     //print all the nodes of doubly linked list
     public void printNodes() {
+        StringBuilder sb = new StringBuilder();
         //Node current will point to head
         node<T> current = head;
         if (head == null) {
@@ -63,9 +64,15 @@ public class list<T> {
         System.out.println("Nodes of doubly linked list: ");
         while (current != null) {
             //Print each node and then go to next.
-            System.out.print(current.data + " ");
+            System.out.println(current.data + " | ");
             current = current.next;
         }
+    }
+    public void clear() {
+        for (int i = 0; i < size; i++)
+            ;
+
+        size = 0;
     }
 
 }

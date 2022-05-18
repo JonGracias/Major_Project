@@ -6,14 +6,14 @@ public class Pair {
     final private int[] position;
     final private String word;
 
-    public Pair(int[] pos, String word) {
+    public Pair(String word,int[] pos) {
         this.position = pos;
         this.word = word.replace(System.lineSeparator(), "");
 
     }
 
     public Pair getPair(){
-        return new Pair(position, word);
+        return new Pair(word, position);
     }
 
     public int[] getPosition(){
@@ -26,7 +26,7 @@ public class Pair {
 
     @Override
     public String toString() {
-        return "("+Arrays.toString(getPosition())+ getWord()+")";
+        return "("+getWord() + Arrays.toString(getPosition())+")";
     }
 
 }

@@ -32,6 +32,7 @@ public class PositionList {
     }
 
     public void setPosition(JTextPane L) throws BadLocationException {
+        clearList();
         int start;
         int x = 0;
         int length;
@@ -47,7 +48,7 @@ public class PositionList {
                 start = (i) - length  + line;
                 int[] pos = new int[]{start, length};
                 String word = L.getDocument().getText(start, length + 1);
-                list.add(new Pair(pos,word));
+                list.add(new Pair(word,pos));
                 setSentences(list);
             }
         }
@@ -58,17 +59,28 @@ public class PositionList {
         wordTree = BstWords.createTree(words);
         hTable = new HTable(words);
     }
+    public void clearList(){
+        position.printNodes();
+        position.clear();
+        position.printNodes();
+
+    }
 
     public void setText(JTextPane pane, int c) throws BadLocationException {
-        switch(c){
-            case 1 : pane.getDocument().insertString(0,position.toString(),attributeSet);
-            break;
-            case 2 :pane.getDocument().insertString(0, String.valueOf(hTable), attributeSet);
-            break;
-            default:wordTree.traversePreOrder();
-                    wordTree.traversePostOrder();
-                    wordTree.traverseInOrder();
+        switch (c) {
+            case 1 -> {
+                position.printNodes();
+                pane.getDocument().insertString(0, position.toString(), attributeSet);
+            }
+            case 2 -> pane.getDocument().insertString(0, String.valueOf(hTable), attributeSet);
+            case 3 -> {
+                wordTree.traversePreOrder();
+                wordTree.traversePostOrder();
+                wordTree.traverseInOrder();
                 pane.getDocument().insertString(0, wordTree.toString(), attributeSet);
+            }
+            default -> {
+            }
         }
     }
 
